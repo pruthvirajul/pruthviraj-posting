@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    container_name: formfill-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin321
+      POSTGRES_DB: job_application_db
+    ports:
+      - "5126:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - formfill-net
+
+  backend:
+    build: ./Backend
+    container_name: formfill-backend
+    ports:
+      - "3139:3139"
+    depends_on:
+      - postgres
+    networks:
+      - formfill-net
+
+  employee_formfilling:
+    build: ./Employee_Formfilling
+    container_name: formfill-employee
+    ports:
+      - "9825:80"
+    depends_on:
+      - backend
+    networks:
+      - formfill-net
+
+  hr_formfilling:
+    build: ./HR_FormFilling
+    container_name: formfill-hr
+    ports:
+      - "9826:80"
+    depends_on:
+      - backend
+    networks:
+      - formfill-net
+
+  welcome-page:
+    build: ./Welcome-Page
+    container_name: formfill-welcome
+    ports:
+      - "9827:80"
+    networks:
+      - formfill-net
+
+volumes:
+  db_data:
+
+networks:
+  formfill-net:
+
